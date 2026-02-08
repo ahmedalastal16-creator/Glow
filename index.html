@@ -1,0 +1,2359 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <base target="_self">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glow AI | مساعد تعليمي ذكي</title>
+    <meta name="description" content="مساعد تعليمي ذكي للمساعدة في فهم المواد الدراسية وتحليل الملفات التعليمية">
+    <meta name="theme-color" content="#050505">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Glow-Ai">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="192.png">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        :root {
+            --primary: #00ff88;
+            --secondary: #00ccff;
+            --bg: #050505;
+            --card: #121212;
+            --text: #ffffff;
+            --input-bg: #151515;
+            --border: #333;
+            --success: #00ff88;
+            --warning: #ffaa00;
+            --error: #ff4444;
+            --gradient-primary: linear-gradient(90deg, #00ff88, #00ccff);
+            --google-blue: #4285F4;
+            --google-red: #EA4335;
+            --google-green: #34A853;
+            --google-yellow: #FBBC05;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+        }
+        
+        *:focus, *:active {
+            outline: none !important;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* تسجيل الدخول مع Google */
+        #auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 5, 5, 0.98);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(15px);
+        }
+        
+        .auth-container {
+            background: linear-gradient(145deg, #0a0a0a, #111);
+            padding: 50px 40px;
+            border-radius: 30px;
+            border: 2px solid var(--primary);
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 255, 136, 0.25);
+            animation: slideUp 0.6s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .auth-title {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .auth-subtitle {
+            color: #aaa;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        
+        .auth-features {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 40px;
+            text-align: right;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: 0.3s;
+        }
+        
+        .feature-item:hover {
+            background: rgba(0, 255, 136, 0.1);
+            border-color: var(--primary);
+            transform: translateX(-5px);
+        }
+        
+        .feature-icon {
+            color: var(--primary);
+            font-size: 1.3rem;
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 255, 136, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .feature-text {
+            flex: 1;
+            text-align: right;
+        }
+        
+        .feature-text h4 {
+            color: var(--primary);
+            margin-bottom: 5px;
+            font-size: 1rem;
+        }
+        
+        .feature-text p {
+            color: #999;
+            font-size: 0.9rem;
+        }
+        
+        /* زر Google */
+        .google-btn {
+            width: 100%;
+            padding: 16px;
+            background: white;
+            border: none;
+            border-radius: 12px;
+            color: #444;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .google-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .google-btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .google-icon {
+            width: 24px;
+            height: 24px;
+            background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMTcuNiA5LjJsLS4xLTEuOEg5djMuNGg0LjhDMTMuNiAxMiAxMyAxMyAxMiAxMy42djIuMmgzYTguOCA4LjggMCAwIDAgMi42LTYuNnoiIGZpbGw9IiM0Mjg1RjQiIGZpbGwtcnVsZT0ibm9uemVybyIvPjxwYXRoIGQ9Ik05IDE4YzIuNCAwIDQuNS0uOCA2LTIuMmwtMy0yLjJhNS40IDUuNCAwIDAgMS04LTIuOUgxVjEzYTkgOSAwIDAgMCA4IDV6IiBmaWxsPSIjMzRBODUzIiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNNCAxMC43YTUuNCA1LjQgMCAwIDEgMC0zLjRWNUgxYTkgOSAwIDAgMCAwIDhsMy0yLjN6IiBmaWxsPSIjRkJCQzA1IiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNOSAzLjZjMS4zIDAgMi41LjQgMy40IDEuM0wxNSAyLjNBOSA5IDAgMCAwIDEgNWwzIDIuNGE1LjQgNS40IDAgMCAxIDUtMy43eiIgZmlsbD0iI0VBNDMzNSIgZmlsbC1ydWxlPSJub256ZXJvIi8+PC9nPjwvc3ZnPg==') no-repeat center;
+            background-size: contain;
+        }
+        
+        .auth-footer {
+            margin-top: 25px;
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        
+        .auth-footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+        }
+        
+        /* الهيدر */
+        header {
+            padding: 15px 5%;
+            background: #0a0a0a;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            flex-shrink: 0;
+        }
+        
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .menu-toggle {
+            font-size: 1.5rem;
+            color: var(--primary);
+            cursor: pointer;
+            padding: 5px;
+            transition: 0.3s;
+        }
+        
+        .menu-toggle:hover {
+            transform: scale(1.1);
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .logo span {
+            color: #666;
+            font-weight: 400;
+        }
+        
+        .user-area {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        /* تحديث القائمة المنسدلة للمستخدم */
+        .user-profile {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            padding: 8px 15px;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.05);
+            transition: 0.3s;
+        }
+        
+        .user-profile:hover {
+            background: rgba(0, 255, 136, 0.1);
+        }
+        
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary);
+        }
+        
+        .user-name {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 0.95rem;
+        }
+        
+        /* القائمة المنسدلة للمستخدم في الزاوية السفلية اليسرى */
+        .user-dropdown {
+            position: fixed;
+            bottom: 80px;
+            left: 20px;
+            width: 250px;
+            background: #1a1a1a;
+            border-radius: 20px;
+            border: 2px solid var(--primary);
+            z-index: 1500;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            display: none;
+            overflow: hidden;
+            animation: slideUpDropdown 0.3s ease;
+        }
+        
+        @keyframes slideUpDropdown {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .dropdown-header {
+            padding: 20px;
+            background: rgba(0, 255, 136, 0.1);
+            border-bottom: 1px solid var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .dropdown-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary);
+        }
+        
+        .dropdown-user-info {
+            flex: 1;
+        }
+        
+        .dropdown-user-name {
+            color: var(--primary);
+            font-weight: 800;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        
+        .dropdown-user-email {
+            color: #aaa;
+            font-size: 0.85rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .dropdown-body {
+            padding: 15px 0;
+        }
+        
+        .dropdown-item {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+            color: #ddd;
+        }
+        
+        .dropdown-item:hover {
+            background: rgba(0, 255, 136, 0.1);
+            color: var(--primary);
+        }
+        
+        .dropdown-item i {
+            width: 20px;
+            text-align: center;
+        }
+        
+        .logout-btn {
+            border-top: 1px solid #333;
+            margin-top: 10px;
+            padding-top: 10px;
+        }
+        
+        .plus-btn {
+            background: var(--gradient-primary);
+            color: #000;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 800;
+            border: none;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        
+        .plus-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+        }
+        
+        .admin-status {
+            color: var(--primary);
+            font-weight: 800;
+            border: 1px solid var(--primary);
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            display: none;
+        }
+        
+        /* الشريط الجانبي */
+        #sidebar {
+            position: fixed;
+            right: -320px;
+            top: 0;
+            width: 320px;
+            height: 100%;
+            background: #0a0a0a;
+            border-left: 1px solid var(--border);
+            z-index: 1000;
+            transition: 0.4s ease;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-shadow: -5px 0 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        #sidebar.open {
+            right: 0;
+        }
+        
+        .sidebar-header {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .sidebar-header h3 {
+            color: var(--primary);
+            font-size: 1.3rem;
+        }
+        
+        .sidebar-close {
+            color: #666;
+            font-size: 1.3rem;
+            cursor: pointer;
+            padding: 5px;
+            transition: 0.3s;
+        }
+        
+        .sidebar-close:hover {
+            color: var(--primary);
+            transform: rotate(90deg);
+        }
+        
+        .sidebar-btn {
+            padding: 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-bottom: 12px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.95rem;
+            transition: 0.3s;
+            display: block;
+            text-decoration: none;
+        }
+        
+        .new-chat-btn {
+            background: #1a1a1a;
+            border: 2px dashed var(--primary);
+            color: var(--primary);
+        }
+        
+        .new-chat-btn:hover {
+            background: rgba(0, 255, 136, 0.1);
+            border-style: solid;
+        }
+        
+        .moe-btn {
+            background: var(--gradient-primary);
+            color: #000;
+            border: none;
+        }
+        
+        .moe-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+        }
+        
+        .history-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+            padding-right: 5px;
+        }
+        
+        .history-item {
+            background: #151515;
+            padding: 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            border: 1px solid transparent;
+            transition: 0.2s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .history-item:hover {
+            border-color: var(--primary);
+            background: #1a1a1a;
+        }
+        
+        .history-item.active {
+            border-color: var(--primary);
+            background: rgba(0, 255, 136, 0.1);
+        }
+        
+        /* منطقة الدردشة */
+        #chat-box {
+            flex: 1;
+            padding: 25px 5%;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .msg-wrapper {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            max-width: 100%;
+        }
+        
+        .ai-wrapper {
+            align-self: flex-start;
+        }
+        
+        .user-wrapper {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+        
+        .ai-icon {
+            width: 42px;
+            height: 42px;
+            background: #1a1a1a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            border: 2px solid #333;
+            flex-shrink: 0;
+            font-size: 1.1rem;
+        }
+        
+        .msg {
+            line-height: 1.6;
+            font-size: 1rem;
+            position: relative;
+            padding: 18px;
+            border-radius: 20px;
+            max-width: 85%;
+            word-wrap: break-word;
+        }
+        
+        .msg.ai {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            white-space: pre-wrap;
+            border-top-right-radius: 4px;
+        }
+        
+        .msg.user {
+            background: var(--primary);
+            color: #000;
+            font-weight: 700;
+            border-top-left-radius: 4px;
+            max-width: fit-content;
+            padding: 12px 20px;
+        }
+        
+        /* منطقة الإدخال */
+        .input-area {
+            padding: 20px 5% 30px;
+            background: #0a0a0a;
+            border-top: 1px solid var(--border);
+            position: relative;
+            flex-shrink: 0;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .web-search-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #111;
+            border: 1px solid #333;
+            padding: 8px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 0 auto 20px;
+            width: fit-content;
+            transition: 0.3s;
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        .web-search-toggle.active {
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+            background: rgba(0, 255, 136, 0.1);
+        }
+        
+        .input-container {
+            background: var(--input-bg);
+            border: 2px solid #333;
+            border-radius: 30px;
+            display: flex;
+            align-items: flex-end;
+            padding: 15px;
+            width: 100%;
+            margin: 0 auto;
+            gap: 10px;
+            transition: 0.3s;
+        }
+        
+        .input-container:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
+        }
+        
+        .input-container textarea {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 10px;
+            outline: none;
+            font-size: 1.05rem;
+            resize: none;
+            max-height: 200px;
+            min-height: 28px;
+            line-height: 1.6;
+            font-family: 'Tajawal', sans-serif;
+        }
+        
+        .input-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .action-icon {
+            color: var(--primary);
+            font-size: 1.4rem;
+            cursor: pointer;
+            padding: 8px;
+            display: inline-block;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+        
+        .action-icon:hover {
+            background: rgba(0, 255, 136, 0.1);
+            transform: scale(1.1);
+        }
+        
+        .send-btn-small {
+            background: var(--gradient-primary);
+            color: #000;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+            flex-shrink: 0;
+            font-size: 1.2rem;
+        }
+        
+        .send-btn-small:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.4);
+        }
+        
+        .send-btn-small.stop {
+            background: var(--error);
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        /* معلومات PDF */
+        #pdf-info {
+            text-align: center;
+            color: var(--primary);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(0, 255, 136, 0.1);
+            border-radius: 10px;
+            border: 1px dashed var(--primary);
+            display: none;
+        }
+        
+        .pdf-progress {
+            width: 100%;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        
+        .pdf-progress-bar {
+            height: 100%;
+            background: var(--gradient-primary);
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+        
+        #preview-container {
+            display: none;
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: rgba(0, 255, 136, 0.05);
+            border-radius: 15px;
+            border: 2px dashed var(--primary);
+        }
+        
+        #preview-img {
+            height: 80px;
+            border-radius: 10px;
+            border: 2px solid var(--primary);
+            object-fit: cover;
+        }
+        
+        .preview-close {
+            color: var(--error);
+            cursor: pointer;
+            margin-right: 15px;
+            font-size: 1.3rem;
+            transition: 0.3s;
+        }
+        
+        .preview-close:hover {
+            transform: scale(1.2);
+        }
+        
+        /* بطاقات المصادر */
+        .source-card {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #222;
+            padding: 8px 15px;
+            border-radius: 12px;
+            margin-top: 15px;
+            text-decoration: none;
+            color: var(--primary);
+            font-size: 0.85rem;
+            border: 1px solid #333;
+            transition: 0.3s;
+            margin-right: 10px;
+        }
+        
+        .source-card:hover {
+            background: #2a2a2a;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .source-card img {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        #counter {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--primary);
+            font-weight: 800;
+            margin-bottom: 15px;
+            padding: 8px 15px;
+            background: rgba(0, 255, 136, 0.1);
+            border-radius: 12px;
+            display: inline-block;
+        }
+        
+        /* مودال الاشتراك */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1500;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background: #0a0a0a;
+            padding: 40px;
+            border-radius: 30px;
+            border: 2px solid var(--primary);
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 0 40px rgba(0, 255, 136, 0.3);
+        }
+        
+        .dot {
+            display: inline-block;
+            animation: wave 1.3s infinite;
+            margin: 0 3px;
+            color: var(--primary);
+            font-weight: 800;
+        }
+        
+        @keyframes wave {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+        
+        /* رسالة ترحيب حديثة - في منتصف الشاشة */
+        .welcome-center-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 204, 255, 0.1));
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 25px;
+            padding: 35px;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            z-index: 5;
+            animation: fadeInScale 0.5s ease-out;
+        }
+        
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+        
+        .welcome-center-title {
+            color: var(--primary);
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .welcome-center-title .user-name {
+            font-size: 2.2rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .welcome-center-text {
+            color: #ddd;
+            line-height: 1.7;
+            margin-bottom: 25px;
+            font-size: 1.1rem;
+        }
+        
+        .welcome-center-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .welcome-center-feature {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 18px;
+            border-radius: 15px;
+            text-align: center;
+            transition: 0.3s;
+            border: 1px solid transparent;
+        }
+        
+        .welcome-center-feature:hover {
+            background: rgba(0, 255, 136, 0.1);
+            transform: translateY(-5px);
+            border-color: var(--primary);
+        }
+        
+        .welcome-center-feature i {
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-bottom: 12px;
+        }
+        
+        .welcome-center-feature h4 {
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+        
+        .welcome-center-feature p {
+            color: #aaa;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        /* تحميل PDF */
+        .pdf-section {
+            background: rgba(0, 255, 136, 0.05);
+            border: 1px solid var(--primary);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        
+        .pdf-section-title {
+            color: var(--primary);
+            font-weight: 800;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .pdf-section-content {
+            color: #ccc;
+            line-height: 1.8;
+            font-size: 0.95rem;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+        
+        /* مؤشر التحميل */
+        .loading-dots {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+        }
+        
+        .loading-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        
+        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        
+        /* --- تصميم متجاوب للجوال واللابتوب --- */
+        
+        /* للجوال (أقل من 768px) */
+        @media (max-width: 767px) {
+            .auth-container {
+                padding: 30px 20px;
+                margin: 15px;
+            }
+            
+            #chat-box {
+                padding: 15px 4%;
+                margin-bottom: 10px;
+            }
+            
+            .input-area {
+                padding: 15px 4% 20px;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: #0a0a0a;
+                border-top: 2px solid #222;
+                z-index: 100;
+            }
+            
+            .input-container {
+                padding: 12px;
+                border-radius: 25px;
+            }
+            
+            .input-container textarea {
+                font-size: 1rem;
+                max-height: 120px;
+            }
+            
+            .msg {
+                max-width: 90%;
+                font-size: 0.95rem;
+                padding: 14px;
+            }
+            
+            .msg.user {
+                padding: 10px 16px;
+                font-size: 0.9rem;
+            }
+            
+            .user-profile {
+                padding: 6px 10px;
+                background: transparent;
+            }
+            
+            .user-name {
+                display: none;
+            }
+            
+            .plus-btn {
+                padding: 6px 15px;
+                font-size: 0.85rem;
+            }
+            
+            .user-dropdown {
+                bottom: 70px;
+                left: 15px;
+                width: 220px;
+            }
+            
+            .dropdown-header {
+                padding: 15px;
+            }
+            
+            .dropdown-avatar {
+                width: 45px;
+                height: 45px;
+            }
+            
+            .dropdown-item {
+                padding: 12px 15px;
+                font-size: 0.9rem;
+            }
+            
+            #sidebar {
+                width: 280px;
+                right: -280px;
+            }
+            
+            .sidebar-btn {
+                padding: 12px;
+                font-size: 0.9rem;
+            }
+            
+            .welcome-center-message {
+                padding: 25px;
+                width: 95%;
+                top: 45%;
+            }
+            
+            .welcome-center-title {
+                font-size: 1.8rem;
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .welcome-center-title .user-name {
+                font-size: 1.8rem;
+            }
+            
+            .welcome-center-text {
+                font-size: 1rem;
+                margin-bottom: 20px;
+            }
+            
+            .welcome-center-features {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .welcome-center-feature {
+                padding: 15px;
+            }
+            
+            .web-search-toggle {
+                font-size: 0.8rem;
+                padding: 6px 15px;
+                margin-bottom: 15px;
+            }
+            
+            .action-icon {
+                font-size: 1.3rem;
+                padding: 6px;
+            }
+            
+            .send-btn-small {
+                width: 44px;
+                height: 44px;
+                font-size: 1.1rem;
+            }
+        }
+        
+        /* للتابلت (من 768px إلى 1024px) */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            #chat-box {
+                padding: 20px 6%;
+                max-width: 900px;
+            }
+            
+            .input-area {
+                padding: 18px 6% 25px;
+                max-width: 900px;
+            }
+            
+            .welcome-center-message {
+                max-width: 700px;
+                padding: 30px;
+            }
+            
+            .welcome-center-title {
+                font-size: 2rem;
+            }
+            
+            .welcome-center-title .user-name {
+                font-size: 2rem;
+            }
+            
+            .welcome-center-features {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        /* لللابتوب/سطح المكتب (أكثر من 1024px) */
+        @media (min-width: 1025px) {
+            #chat-box {
+                padding: 25px 8%;
+                max-width: 1200px;
+            }
+            
+            .input-area {
+                padding: 20px 8% 30px;
+                max-width: 1200px;
+            }
+            
+            .welcome-center-message {
+                max-width: 800px;
+                padding: 40px;
+            }
+            
+            .welcome-center-title {
+                font-size: 2.5rem;
+            }
+            
+            .welcome-center-title .user-name {
+                font-size: 2.5rem;
+            }
+            
+            .welcome-center-features {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .user-dropdown {
+                bottom: 100px;
+                left: 30px;
+                width: 280px;
+            }
+        }
+        
+        /* تحسينات عامة للاستجابة */
+        @media (max-width: 767px) {
+            body {
+                height: calc(100vh - env(safe-area-inset-bottom));
+            }
+            
+            header {
+                padding: 12px 4%;
+                position: sticky;
+                top: 0;
+            }
+            
+            .logo {
+                font-size: 1.5rem;
+            }
+            
+            .menu-toggle {
+                font-size: 1.3rem;
+            }
+            
+            .ai-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 1rem;
+            }
+            
+            #pdf-info {
+                margin-bottom: 10px;
+                padding: 8px;
+                font-size: 0.85rem;
+            }
+            
+            #counter {
+                font-size: 0.85rem;
+                margin-bottom: 12px;
+                padding: 6px 12px;
+            }
+        }
+        
+        /* تحسينات للتجربة على الشاشات الصغيرة جداً */
+        @media (max-width: 360px) {
+            .welcome-center-title {
+                font-size: 1.6rem;
+            }
+            
+            .welcome-center-title .user-name {
+                font-size: 1.6rem;
+            }
+            
+            .welcome-center-text {
+                font-size: 0.9rem;
+            }
+            
+            .user-dropdown {
+                width: 200px;
+                left: 10px;
+                bottom: 60px;
+            }
+            
+            .plus-btn {
+                padding: 5px 12px;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- نافذة تسجيل الدخول مع Google -->
+<div id="auth-overlay">
+    <div class="auth-container">
+        <div class="auth-title">Glow.ai</div>
+        <div class="auth-subtitle">مساعد تعليمي ذكي يساعدك في فهم المواد الدراسية وتحليل الملفات التعليمية بذكاء اصطناعي متقدم</div>
+        
+        <div class="auth-features">
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <div class="feature-text">
+                    <h4>ذكاء اصطناعي متقدم</h4>
+                    <p>إجابات دقيقة بناءً على أحدث نماذج الذكاء الاصطناعي</p>
+                </div>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-file-pdf"></i>
+                </div>
+                <div class="feature-text">
+                    <h4>تحليل ملفات PDF كاملة</h4>
+                    <p>تحميل وتحليل ملفات PDF حتى 10MB بالكامل</p>
+                </div>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div class="feature-text">
+                    <h4>مساعد تعليمي شخصي</h4>
+                    <p>مساعدتك في فهم المواد الدراسية والإجابة على أسئلتك</p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="g_id_onload"
+            data-client_id="424181196939-seqcnjedep4a484uumkvnoi65mla3hvb.apps.googleusercontent.com"
+            data-context="signin"
+            data-ux_mode="popup"
+            data-callback="handleGoogleSignIn"
+            data-auto_prompt="false">
+        </div>
+
+        <div class="g_id_signin"
+            data-type="standard"
+            data-shape="rectangular"
+            data-theme="outline"
+            data-text="signin_with"
+            data-size="large"
+            data-logo_alignment="left"
+            data-width="300">
+        </div>
+        
+        <div class="auth-footer">
+            بتسجيل الدخول، فإنك توافق على <a href="#">شروط الخدمة</a> و<a href="#">سياسة الخصوصية</a><br>
+            تطوير: م. أحمد الأسطل
+        </div>
+    </div>
+</div>
+
+<!-- القائمة المنسدلة للمستخدم (الزاوية السفلية اليسرى) -->
+<div id="user-dropdown" class="user-dropdown">
+    <div class="dropdown-header">
+        <img id="dropdown-avatar" class="dropdown-avatar" src="" alt="صورة المستخدم">
+        <div class="dropdown-user-info">
+            <div id="dropdown-user-name" class="dropdown-user-name"></div>
+            <div id="dropdown-user-email" class="dropdown-user-email"></div>
+        </div>
+    </div>
+    <div class="dropdown-body">
+        <div class="dropdown-item" onclick="startNewChat()">
+            <i class="fas fa-plus-circle"></i>
+            محادثة جديدة
+        </div>
+        <div class="dropdown-item" onclick="toggleSidebar()">
+            <i class="fas fa-history"></i>
+            سجل المحادثات
+        </div>
+        <div class="dropdown-item" onclick="showPlusModal()">
+            <i class="fas fa-crown"></i>
+            ترقية إلى PLUS
+        </div>
+        <div class="dropdown-item" onclick="window.open('https://www.moe.edu.ps/gaza/subjects', '_blank')">
+            <i class="fas fa-download"></i>
+            الرزم التعليمية
+        </div>
+        <div class="dropdown-item logout-btn" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i>
+            تسجيل الخروج
+        </div>
+    </div>
+</div>
+
+<!-- الشريط الجانبي -->
+<div id="sidebar">
+    <div class="sidebar-header">
+        <h3>القائمة</h3>
+        <i class="fas fa-times sidebar-close" onclick="toggleSidebar()"></i>
+    </div>
+    <div class="sidebar-btn new-chat-btn" onclick="startNewChat()">
+        <i class="fas fa-plus"></i> محادثة جديدة
+    </div>
+    <a href="https://www.moe.edu.ps/gaza/subjects" target="_blank" class="sidebar-btn moe-btn">
+        <i class="fas fa-download"></i> تحميل الرزم التعليمية
+    </a>
+    <div class="history-list" id="history-list"></div>
+</div>
+
+<!-- الهيدر -->
+<header>
+    <div class="logo-area">
+        <i class="fas fa-bars menu-toggle" onclick="toggleSidebar()"></i>
+        <div class="logo" onclick="location.reload()">
+            <i class="fas fa-graduation-cap"></i> Glow<span>.ai</span>
+        </div>
+    </div>
+    
+    <div class="user-area">
+        <div id="user-profile" class="user-profile" style="display: none;" onclick="toggleUserDropdown()">
+            <img id="user-avatar" class="user-avatar" src="" alt="صورة المستخدم">
+            <span id="user-name" class="user-name"></span>
+        </div>
+        
+        <button id="auth-btn" onclick="showAuth()" style="display: none;">تسجيل الدخول</button>
+        <button id="plus-btn" class="plus-btn" onclick="showPlusModal()">GLOW PLUS</button>
+        <div id="admin-tag" class="admin-status">Hello Admin</div>
+    </div>
+</header>
+
+<!-- رسالة ترحيب مركزية -->
+<div id="welcome-center-message" class="welcome-center-message" style="display: none;">
+    <div class="welcome-center-title">
+        <i class="fas fa-graduation-cap"></i>
+        <span>مرحباً</span>
+        <span id="welcome-user-name" class="user-name"></span>
+    </div>
+    <div class="welcome-center-text">
+        أنا Glow، مساعدك التعليمي الذكي. يمكنني مساعدتك في فهم المواد الدراسية وتحليل ملفات PDF والإجابة على جميع أسئلتك التعليمية.
+    </div>
+    <div class="welcome-center-features">
+        <div class="welcome-center-feature">
+            <i class="fas fa-book"></i>
+            <h4>شرح المواد</h4>
+            <p>شرح مفاهيم دراسية معقدة بطريقة مبسطة</p>
+        </div>
+        <div class="welcome-center-feature">
+            <i class="fas fa-file-pdf"></i>
+            <h4>تحليل PDF</h4>
+            <p>تحميل ملفات PDF حتى 10MB والإجابة على أسئلتك منها</p>
+        </div>
+        <div class="welcome-center-feature">
+            <i class="fas fa-question-circle"></i>
+            <h4>حل الأسئلة</h4>
+            <p>الإجابة على أسئلتك التعليمية بدقة ووضوح</p>
+        </div>
+        <div class="welcome-center-feature">
+            <i class="fas fa-search"></i>
+            <h4>بحث ذكي</h4>
+            <p>البحث عن معلومات إضافية عند الحاجة</p>
+        </div>
+    </div>
+</div>
+
+<!-- منطقة الدردشة -->
+<div id="chat-box"></div>
+
+<!-- منطقة الإدخال -->
+<div class="input-area">
+    <div class="web-search-toggle" id="webSearchBtn" onclick="toggleWebSearch()">
+        <i class="fas fa-globe"></i>
+        <span>Web Search</span>
+    </div>
+    
+    <div id="preview-container">
+        <i class="fas fa-times-circle preview-close" onclick="cancelImage()"></i>
+        <img id="preview-img" src="">
+    </div>
+    
+    <div id="pdf-info">
+        <div id="pdf-status"></div>
+        <div class="pdf-progress">
+            <div class="pdf-progress-bar" id="pdf-progress-bar"></div>
+        </div>
+    </div>
+    
+    <p id="counter"></p>
+    
+    <div class="input-container">
+        <div class="input-actions">
+            <label for="file-input" class="action-icon" title="رفع ملف PDF">
+                <i class="fas fa-file-pdf"></i>
+            </label>
+            <input type="file" id="file-input" accept="application/pdf" style="display:none" onchange="processPDF(this)">
+            
+            <label for="image-input" class="action-icon" title="رفع صورة">
+                <i class="fas fa-camera"></i>
+            </label>
+            <input type="file" id="image-input" accept="image/*" style="display:none" onchange="previewImage(this)">
+        </div>
+        
+        <textarea id="userInput" rows="1" placeholder="اسأل Glow عن أي شيء..." oninput="autoResize(this)"></textarea>
+        
+        <button id="sendBtn" class="send-btn-small" onclick="askAI()">
+            <i id="sendIcon" class="fas fa-paper-plane"></i>
+        </button>
+    </div>
+</div>
+
+<!-- مودال الاشتراك -->
+<div id="plusModal" class="modal">
+    <div class="modal-content">
+        <h2 style="color:var(--primary); margin-bottom:15px;">انتهت محاولاتك! 🚀</h2>
+        <p style="color:#ccc; margin-bottom:20px;">اشترك الآن في GLOW PLUS للحصول على وصول غير محدود.</p>
+        <button onclick="closeModal('plusModal')" style="background:none; border:1px solid #555; color:#555; padding:10px 25px; border-radius:12px; cursor:pointer; transition:0.3s;">إغلاق</button>
+    </div>
+</div>
+
+<script>
+    // تهيئة مكتبة PDF.js
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+    
+    // --- API KEY المحدثة ---
+    const API_KEY = "sk-5af1503fbea84e718e576400e8c71b21";
+    
+    // --- الإعدادات الخاصة ---
+    const MY_ADMIN_IP = "213.6.209.127"; 
+    // -------------------------
+    
+    // متغيرات النظام
+    let currentUser = null;
+    let pdfText = "";
+    let chatHistory = [];
+    let selectedImageBase64 = null;
+    let currentChatId = Date.now();
+    let isWebSearch = false;
+    let isAdmin = false;
+    let isTyping = false;
+    let typingInterval = null;
+    let pdfPages = [];
+    let uploadedFileName = "";
+    let pdfProcessing = false;
+    let dropdownOpen = false;
+    
+    // تعريف معرف الجهاز
+    const deviceId = btoa(navigator.userAgent).substring(0, 15);
+    let attempts = localStorage.getItem('Glow_usage_' + deviceId) || 10;
+    
+    // تحميل التطبيق
+    window.onload = async () => {
+        // التحقق من تسجيل الدخول السابق
+        const savedUser = localStorage.getItem('glow_current_user');
+        if (savedUser) {
+            currentUser = JSON.parse(savedUser);
+            updateUserUI();
+            document.getElementById('auth-overlay').style.display = 'none';
+            
+            // إظهار رسالة الترحيب المركزية
+            showCenterWelcome();
+        } else {
+            document.getElementById('auth-overlay').style.display = 'flex';
+        }
+        
+        // تهيئة النظام
+        loadHistory();
+        startNewChat();
+        await checkAdminStatus();
+        syncUI();
+        
+        // تهيئة Google Sign-In
+        initializeGoogleSignIn();
+        
+        // إغلاق القائمة المنسدلة عند النقر خارجها
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('user-dropdown');
+            const profile = document.getElementById('user-profile');
+            
+            if (dropdownOpen && !dropdown.contains(event.target) && !profile.contains(event.target)) {
+                closeUserDropdown();
+            }
+        });
+    };
+    
+    // --- تهيئة Google Sign-In ---
+    function initializeGoogleSignIn() {
+        // سيتم تهيئته تلقائياً بواسطة Google
+        console.log("Google Sign-In جاهز");
+    }
+    
+    // --- معالجة استجابة Google Sign-In ---
+    function handleGoogleSignIn(response) {
+        console.log("Google Sign-In response:", response);
+        
+        // فك تشفير بيانات الاعتماد
+        const credential = response.credential;
+        const payload = JSON.parse(atob(credential.split('.')[1]));
+        
+        console.log("User payload:", payload);
+        
+        // إنشاء كائن المستخدم
+        currentUser = {
+            id: payload.sub,
+            name: payload.name,
+            email: payload.email,
+            picture: payload.picture,
+            verified: payload.email_verified,
+            loginMethod: 'google',
+            loginDate: new Date().toISOString(),
+            attempts: 50 // محاولات إضافية للمستخدمين الجدد
+        };
+        
+        // حفظ بيانات المستخدم
+        localStorage.setItem('glow_current_user', JSON.stringify(currentUser));
+        
+        // تحديث واجهة المستخدم
+        updateUserUI();
+        
+        // إخفاء نافذة المصادقة
+        document.getElementById('auth-overlay').style.display = 'none';
+        
+        // إظهار رسالة الترحيب المركزية
+        showCenterWelcome();
+        
+        // إعطاء محاولات إضافية للمستخدم الجديد
+        attempts = currentUser.attempts;
+        localStorage.setItem('Glow_usage_' + deviceId, attempts);
+        
+        // بدء محادثة جديدة
+        startNewChat();
+        syncUI();
+    }
+    
+    // --- إظهار رسالة الترحيب المركزية ---
+    function showCenterWelcome() {
+        if (!currentUser) return;
+        
+        const welcomeMessage = document.getElementById('welcome-center-message');
+        const welcomeUserName = document.getElementById('welcome-user-name');
+        
+        welcomeUserName.textContent = currentUser.name;
+        welcomeMessage.style.display = 'block';
+        
+        // إخفاء الرسالة عندما المستخدم يبعت رسالة 
+        setTimeout(() => {
+            welcomeMessage.style.opacity = '0';
+            welcomeMessage.style.transition = 'opacity 1s ease';
+            
+            setTimeout(() => {
+                welcomeMessage.style.display = 'none';
+            }, 1000);
+        }, 5000);
+    }
+    
+    function updateUserUI() {
+        if (currentUser) {
+            document.getElementById('user-profile').style.display = 'flex';
+            document.getElementById('auth-btn').style.display = 'none';
+            
+            document.getElementById('user-name').textContent = currentUser.name;
+            document.getElementById('dropdown-user-name').textContent = currentUser.name;
+            document.getElementById('dropdown-user-email').textContent = currentUser.email;
+            
+            if (currentUser.picture) {
+                document.getElementById('user-avatar').src = currentUser.picture;
+                document.getElementById('dropdown-avatar').src = currentUser.picture;
+            } else {
+                const avatarUrl = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.name) + '&background=00ff88&color=000&size=36';
+                document.getElementById('user-avatar').src = avatarUrl;
+                document.getElementById('dropdown-avatar').src = avatarUrl.replace('size=36', 'size=50');
+            }
+        } else {
+            document.getElementById('user-profile').style.display = 'none';
+            document.getElementById('auth-btn').style.display = 'block';
+            closeUserDropdown();
+        }
+    }
+    
+    function showAuth() {
+        document.getElementById('auth-overlay').style.display = 'flex';
+        closeUserDropdown();
+    }
+    
+    function logout() {
+        // تسجيل الخروج من Google
+        if (currentUser && currentUser.loginMethod === 'google') {
+            google.accounts.id.disableAutoSelect();
+            google.accounts.id.revoke(currentUser.email, done => {
+                console.log("تم تسجيل الخروج من Google");
+            });
+        }
+        
+        // مسح بيانات المستخدم
+        currentUser = null;
+        localStorage.removeItem('glow_current_user');
+        
+        // تحديث واجهة المستخدم
+        updateUserUI();
+        
+        // إظهار نافذة المصادقة
+        showAuth();
+        
+        // إخفاء رسالة الترحيب المركزية
+        document.getElementById('welcome-center-message').style.display = 'none';
+        
+        // بدء محادثة جديدة
+        startNewChat();
+    }
+    
+    // --- التحقق من حالة المشرف ---
+    async function checkAdminStatus() {
+        try {
+            const res = await fetch('https://api.ipify.org?format=json');
+            const data = await res.json();
+            if (data.ip === MY_ADMIN_IP) {
+                isAdmin = true;
+                attempts = 999999;
+                document.getElementById('admin-tag').style.display = 'block';
+            }
+        } catch (e) {
+            console.error("فشل التحقق من IP");
+        }
+    }
+    
+    function syncUI() {
+        if (isAdmin) {
+            document.getElementById('counter').innerText = "➿ وصول كامل";
+            document.getElementById('plus-btn').style.display = 'none';
+            document.getElementById('admin-tag').style.display = 'block';
+        } else if (currentUser && currentUser.attempts) {
+            document.getElementById('counter').innerText = `المحاولات المتبقية: ${attempts}`;
+        } else {
+            document.getElementById('counter').innerText = `المحاولات المتبقية: ${attempts}`;
+        }
+    }
+    
+    // --- وظائف القائمة المنسدلة للمستخدم ---
+    function toggleUserDropdown() {
+        if (!currentUser) return;
+        
+        const dropdown = document.getElementById('user-dropdown');
+        
+        if (dropdownOpen) {
+            closeUserDropdown();
+        } else {
+            dropdownOpen = true;
+            dropdown.style.display = 'block';
+            
+            // تحديد موقع القائمة المنسدلة
+            const profile = document.getElementById('user-profile');
+            const rect = profile.getBoundingClientRect();
+            
+            // بالنسبة للجوال، نجعلها في الزاوية السفلية اليسرى
+            if (window.innerWidth <= 767) {
+                dropdown.style.bottom = '70px';
+                dropdown.style.left = '15px';
+                dropdown.style.right = 'auto';
+            }
+        }
+    }
+    
+    function closeUserDropdown() {
+        dropdownOpen = false;
+        document.getElementById('user-dropdown').style.display = 'none';
+    }
+    
+    // --- وظائف الواجهة ---
+    function autoResize(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = Math.min(textarea.scrollHeight, window.innerWidth <= 767 ? 120 : 200) + 'px';
+    }
+    
+    function toggleWebSearch() {
+        isWebSearch = !isWebSearch;
+        const btn = document.getElementById('webSearchBtn');
+        btn.classList.toggle('active');
+        btn.querySelector('span').innerText = isWebSearch ? 'Web Search ✓' : 'Web Search';
+    }
+    
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('open');
+        closeUserDropdown();
+    }
+    
+    function startNewChat() {
+        currentChatId = Date.now();
+        chatHistory = [];
+        pdfText = "";
+        pdfPages = [];
+        uploadedFileName = "";
+        
+        document.getElementById('chat-box').innerHTML = "";
+        document.getElementById('pdf-info').style.display = 'none';
+        
+        if (currentUser) {
+            // لا نعرض رسالة هنا لأن لدينا الرسالة المركزية
+        } else {
+            addMessage("أهلاً بك في Glow التعليمي.. كيف يمكنني مساعدتك؟", "ai", false);
+        }
+        
+        if (pdfPages.length > 0) {
+            showPDFUploadedMessage();
+        }
+        
+        closeUserDropdown();
+    }
+    
+    // --- معالجة الصور ---
+    function previewImage(input) {
+        const file = input.files[0];
+        if (!file) return;
+        
+        const maxSize = window.innerWidth <= 767 ? 3 * 1024 * 1024 : 5 * 1024 * 1024;
+        if (file.size > maxSize) {
+            alert(`حجم الصورة كبير جداً. الحد الأقصى ${Math.round(maxSize/(1024*1024))}MB`);
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            selectedImageBase64 = e.target.result.split(',')[1];
+            document.getElementById('preview-img').src = e.target.result;
+            document.getElementById('preview-container').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+    
+    function cancelImage() {
+        selectedImageBase64 = null;
+        document.getElementById('preview-container').style.display = 'none';
+        document.getElementById('image-input').value = '';
+    }
+    
+    // --- معالجة ملفات PDF (محسّنة للـ 10MB) ---
+    async function processPDF(input) {
+        if (pdfProcessing) {
+            alert("جار معالجة ملف PDF بالفعل. يرجى الانتظار...");
+            return;
+        }
+        
+        const file = input.files[0];
+        if (!file) return;
+        
+        uploadedFileName = file.name;
+        const infoDiv = document.getElementById('pdf-info');
+        const statusDiv = document.getElementById('pdf-status');
+        const progressBar = document.getElementById('pdf-progress-bar');
+        
+        infoDiv.style.display = 'block';
+        statusDiv.innerHTML = `جار تحميل "${file.name}"... ⏳`;
+        progressBar.style.width = '5%';
+        
+        // التحقق من حجم الملف (زيادة الحد إلى 10MB)
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        if (file.size > maxSize) {
+            statusDiv.innerHTML = `حجم الملف كبير جداً (${Math.round(file.size / (1024*1024))}MB). الحد الأقصى 10MB ❌`;
+            progressBar.style.width = '0%';
+            return;
+        }
+        
+        pdfProcessing = true;
+        
+        try {
+            const reader = new FileReader();
+            reader.onload = async function() {
+                try {
+                    const typedarray = new Uint8Array(this.result);
+                    const pdf = await pdfjsLib.getDocument({
+                        data: typedarray,
+                        cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/cmaps/',
+                        cMapPacked: true
+                    }).promise;
+                    
+                    const totalPages = pdf.numPages;
+                    
+                    // إعادة تهيئة متغير PDF
+                    pdfText = "";
+                    pdfPages = [];
+                    
+                    // تحميل جميع الصفحات بشكل تدريجي
+                    for (let i = 1; i <= totalPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const content = await page.getTextContent();
+                        
+                        // تجميع نص الصفحة بكفاءة
+                        const pageText = content.items.map(item => item.str).join(" ");
+                        pdfPages.push({
+                            page: i,
+                            text: pageText
+                        });
+                        
+                        pdfText += `\n\n--- الصفحة ${i} ---\n${pageText}`;
+                        
+                        // تحديث شريط التقدم
+                        const progress = Math.round((i / totalPages) * 90) + 5;
+                        progressBar.style.width = `${progress}%`;
+                        statusDiv.innerHTML = `جار معالجة الصفحة ${i} من ${totalPages}... 📄 (${Math.round(pdfText.length / 1024)}KB)`;
+                        
+                        // إعطاء فرصة للمتصفح للتنفس (تقليل التأخير)
+                        if (i % 3 === 0) await new Promise(resolve => setTimeout(resolve, 30));
+                    }
+                    
+                    // تحميل كامل النجاح
+                    progressBar.style.width = '100%';
+                    const totalSizeKB = Math.round(pdfText.length / 1024);
+                    statusDiv.innerHTML = `✅ تم تحميل ${totalPages} صفحة بالكامل (${totalSizeKB}KB)`;
+                    
+                    // إظهار رسالة في الدردشة
+                    showPDFUploadedMessage();
+                    
+                    // حفظ في التخزين المحلي
+                    savePDFToStorage();
+                    
+                    // إظهار رسالة نجاح
+                    addMessage(`تم تحميل ملف PDF "${uploadedFileName}" بنجاح! يمكنك الآن طرح أسئلة حول محتواه.`, "ai", false);
+                    
+                } catch (err) {
+                    console.error("خطأ في قراءة PDF:", err);
+                    statusDiv.innerHTML = "حدث خطأ في قراءة الملف ❌";
+                    progressBar.style.width = '0%';
+                    addMessage("عذراً، حدث خطأ في تحميل ملف PDF. يرجى التأكد من أن الملف صالح وحاول مرة أخرى.", "ai", false);
+                } finally {
+                    pdfProcessing = false;
+                }
+            };
+            
+            reader.onerror = function() {
+                statusDiv.innerHTML = "خطأ في قراءة الملف ❌";
+                progressBar.style.width = '0%';
+                pdfProcessing = false;
+            };
+            
+            reader.readAsArrayBuffer(file);
+            
+        } catch (error) {
+            console.error("خطأ في معالجة PDF:", error);
+            statusDiv.innerHTML = "حدث خطأ غير متوقع ❌";
+            progressBar.style.width = '0%';
+            pdfProcessing = false;
+        }
+    }
+    
+    function showPDFUploadedMessage() {
+        if (pdfPages.length === 0) return;
+        
+        const chatBox = document.getElementById('chat-box');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'msg-wrapper ai-wrapper';
+        
+        const totalSizeKB = Math.round(pdfText.length / 1024);
+        
+        let content = `<div class="pdf-section">
+            <div class="pdf-section-title">
+                <i class="fas fa-file-pdf"></i>
+                ${uploadedFileName ? `تم تحميل: ${uploadedFileName}` : 'ملف PDF تم تحميله'}
+            </div>
+            <div class="pdf-section-content">
+                <strong>📊 معلومات الملف:</strong><br>
+                • عدد الصفحات: ${pdfPages.length}<br>
+                • الحجم الكامل: ${totalSizeKB}KB (تم تحميله بالكامل)<br>
+                • الحالة: جاهز للاستعلام<br><br>
+                <strong>💡 نصائح للاستخدام:</strong><br>
+                1. اسأل عن أي مفهوم في الملف<br>
+                2. اطلب تلخيص أي قسم<br>
+                3. اسأل عن أسئلة وأجوبة من المحتوى<br>
+                4. اطلب شرح أي فقرة صعبة
+            </div>
+        </div>`;
+        
+        messageDiv.innerHTML = `
+            <div class="ai-icon"><i class="fas fa-file-pdf"></i></div>
+            <div class="msg ai">
+                <i class="fas fa-check-circle" style="color:var(--primary); margin-left:5px;"></i>
+                تم تحميل ملف PDF بنجاح! (${totalSizeKB}KB)
+                ${content}
+            </div>
+        `;
+        
+        chatBox.appendChild(messageDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+    
+    function savePDFToStorage() {
+        if (!currentUser || pdfPages.length === 0) return;
+        
+        try {
+            const userPDFs = JSON.parse(localStorage.getItem('glow_user_pdfs') || '{}');
+            const pdfId = `pdf_${Date.now()}`;
+            
+            // حفظ الملخص فقط (البيانات الكاملة قد تكون كبيرة جداً)
+            userPDFs[pdfId] = {
+                userId: currentUser.email,
+                fileName: uploadedFileName,
+                pages: pdfPages.length,
+                size: pdfText.length,
+                uploadDate: new Date().toISOString(),
+                preview: pdfText.substring(0, 2000) // حفظ معاينة أكبر
+            };
+            
+            localStorage.setItem('glow_user_pdfs', JSON.stringify(userPDFs));
+        } catch (e) {
+            console.error("خطأ في حفظ PDF:", e);
+        }
+    }
+    
+    // --- الاتصال بالذكاء الاصطناعي ---
+   async function askAI() {
+    if (isTyping) {
+        stopCurrentTyping();
+        return;
+    }
+    
+    const input = document.getElementById('userInput');
+    const text = input.value.trim();
+    
+    if (!text && !selectedImageBase64) return;
+    
+    // التحقق من المحاولات المتبقية
+    if (!isAdmin && attempts <= 0) {
+        showPlusModal();
+        return;
+    }
+    
+    // إضافة رسالة المستخدم
+    addMessage(text || "تحليل صورة...", "user", false, selectedImageBase64);
+    
+    // إعداد محتوى الرسالة (متوافق مع Arcee Trinity / Llama 3)
+    let messageContent;
+    if (selectedImageBase64) {
+        messageContent = [
+            { type: "text", text: text || "ماذا يوجد في هذه الصورة؟" },
+            { type: "image_url", image_url: { url: `data:image/jpeg;base64,${selectedImageBase64}` } }
+        ];
+    } else {
+        messageContent = text;
+    }
+    
+    chatHistory.push({ role: "user", content: messageContent });
+    
+    // تنظيف واجهة الإدخال
+    cancelImage();
+    input.value = "";
+    input.style.height = 'auto';
+    
+    // إظهار مؤشر الكتابة
+    const chatBox = document.getElementById('chat-box');
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'msg-wrapper ai-wrapper';
+    typingDiv.innerHTML = `
+        <div class="ai-icon"><i class="fas fa-user-graduate"></i></div>
+        <div class="msg ai">
+            <div class="loading-dots">
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
+            </div>
+        </div>
+    `;
+    chatBox.appendChild(typingDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+    
+    try {
+        // بناء رسالة النظام - تم تعديلها لتناسب قدرات Arcee Trinity الضخمة
+        let systemPrompt = "أنت Glow التعليمي، مساعد ذكي للطلاب. مهمتك مساعدة الطلاب في فهم المواد التعليمية والإجابة بدقة وبناء امتحانات احترافية. تطوير: م. أحمد الأسطل.";
+        
+        // تعديل الرزمة: أرسل المحتوى كاملاً بدون تقطيع (لأن الموديل يدعم Context عالي)
+        if (pdfPages.length > 0) {
+            systemPrompt += "\n\n**محتوى الرزمة التعليمية الكاملة:**\n";
+            let fullPdfContext = "";
+            for (const page of pdfPages) {
+                fullPdfContext += `\n[صفحة ${page.page}]: ${page.text}\n`;
+            }
+            // أرسل النص كاملاً كما هو لضمان قراءة الـ 10 ميجا
+            systemPrompt += fullPdfContext;
+            systemPrompt += "\n\n**تعليمات:** استخدم كامل المحتوى أعلاه للإجابة. إذا طلب الطالب امتحاناً، نسقه فوراً بجداول HTML.";
+        }
+        
+        if (isWebSearch) {
+            systemPrompt += "\n\n(Web Search مفعّل).";
+        }
+        
+        // إعداد الطلب لـ OpenRouter
+        const messages = [
+            { role: "system", content: systemPrompt },
+            ...chatHistory.slice(-10) // الحفاظ على آخر 10 رسائل
+        ];
+        
+        const response = await fetch("https://api.deepseek.com/chat/completions", {
+    method: "POST",
+    headers: {
+        "Authorization": `Bearer ${API_KEY}`,
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+        model: "deepseek-chat",
+        messages: messages,
+        max_tokens: 2000,
+        temperature: 0.7,
+        stream: false
+    })
+});
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${API_KEY}`,
+                "Content-Type": "application/json",
+                "HTTP-Referer": window.location.href, // متطلب لبعض موديلات OpenRouter
+                "X-Title": "Glow AI"
+            },
+            body: JSON.stringify({
+                model: "arcee-ai/arcee-trinity-large-preview",
+                messages: messages,
+                max_tokens: 4000, // الرد يكون طويلاً للامتحانات
+                temperature: 0.6
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (typingDiv.parentNode) {
+            chatBox.removeChild(typingDiv);
+        }
+        
+        if (data.choices && data.choices[0]) {
+            const aiResponse = data.choices[0].message.content;
+            
+            setStopState(true);
+            addMessage(aiResponse, "ai", true);
+            
+            chatHistory.push({ role: "assistant", content: aiResponse });
+            
+            // تحديث المحاولات
+            if (!isAdmin) {
+                attempts--;
+                localStorage.setItem('Glow_usage_' + deviceId, attempts);
+                if (currentUser) {
+                    const users = JSON.parse(localStorage.getItem('glow_users') || '{}');
+                    if (users[currentUser.email]) {
+                        users[currentUser.email].attempts = attempts;
+                        localStorage.setItem('glow_users', JSON.stringify(users));
+                    }
+                }
+            }
+            
+            syncUI();
+            saveChat();
+            
+        } else {
+            throw new Error(data.error?.message || "فشل في الحصول على رد");
+        }
+        
+    } catch (error) {
+        console.error("خطأ:", error);
+        if (typingDiv.parentNode) chatBox.removeChild(typingDiv);
+        addMessage("حدث خطأ في الاتصال بالموديل. تأكد من المفتاح ومن حجم الرزمة.", "ai", false);
+    }
+}
+
+    
+    // --- وظائف الرسائل ---
+    function addMessage(text, side, animate, img = null) {
+        const chatBox = document.getElementById('chat-box');
+        const wrapper = document.createElement('div');
+        wrapper.className = `msg-wrapper ${side}-wrapper`;
+        
+        if (side === 'ai') {
+            wrapper.innerHTML = `
+                <div class="ai-icon"><i class="fas fa-user-graduate"></i></div>
+                <div class="msg ai"></div>
+            `;
+        } else {
+            wrapper.innerHTML = `<div class="msg user"></div>`;
+        }
+        
+        const msgDiv = wrapper.querySelector('.msg');
+        
+        // إذا كان هناك صورة
+        if (img) {
+            msgDiv.innerHTML += `<img src="data:image/jpeg;base64,${img}" style="max-width:100%; border-radius:12px; margin-bottom:15px; display:block;"><br>`;
+        }
+        
+        chatBox.appendChild(wrapper);
+        
+        // تحويل النص إذا كان مصفوفة
+        const displayText = Array.isArray(text) ? 
+            text.find(t => t.type === 'text')?.text || "تحليل وسائط..." : 
+            text;
+        
+        // تأثير الكتابة إذا كان مطلوباً
+        if (side === 'ai' && animate) {
+            let index = 0;
+            msgDiv.innerText = "";
+            
+            typingInterval = setInterval(() => {
+                if (index < displayText.length) {
+                    msgDiv.innerText += displayText[index];
+                    index++;
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                } else {
+                    stopCurrentTyping();
+                    processSources(msgDiv);
+                }
+            }, window.innerWidth <= 767 ? 3 : 5); // سرعة كتابة متغيرة حسب الجهاز
+        
+        } else {
+            msgDiv.innerText = displayText;
+            if (side === 'ai') {
+                processSources(msgDiv);
+            }
+        }
+        
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+    
+    function setStopState(active) {
+        isTyping = active;
+        const btn = document.getElementById('sendBtn');
+        const icon = document.getElementById('sendIcon');
+        
+        if (active) {
+            btn.classList.add('stop');
+            btn.style.background = 'var(--error)';
+            icon.className = 'fas fa-stop';
+        } else {
+            btn.classList.remove('stop');
+            btn.style.background = 'var(--gradient-primary)';
+            icon.className = 'fas fa-paper-plane';
+        }
+    }
+    
+    function stopCurrentTyping() {
+        if (typingInterval) {
+            clearInterval(typingInterval);
+            typingInterval = null;
+        }
+        setStopState(false);
+    }
+    
+    function processSources(container) {
+        // البحث عن روابط في النص
+        const regex = /https?:\/\/[^\s]+|www\.[^\s]+/g;
+        const text = container.innerText;
+        const links = text.match(regex);
+        
+        if (links) {
+            let newHTML = container.innerHTML;
+            
+            links.forEach(link => {
+                try {
+                    const fullLink = link.startsWith('http') ? link : 'https://' + link;
+                    const domain = new URL(fullLink).hostname;
+                    
+                    const sourceCard = `<br><a href="${fullLink}" target="_blank" class="source-card">
+                        <img src="https://www.google.com/s2/favicons?sz=64&domain=${domain}">
+                        المصدر: ${domain}
+                    </a>`;
+                    
+                    newHTML = newHTML.replace(link, sourceCard);
+                } catch (e) {
+                    // تجاهل الروابط غير الصالحة
+                }
+            });
+            
+            container.innerHTML = newHTML;
+        }
+    }
+    
+    // --- المودالات ---
+    function showPlusModal() {
+        document.getElementById('plusModal').style.display = 'flex';
+        closeUserDropdown();
+    }
+    
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
+    
+    // --- حفظ المحادثات ---
+    function saveChat() {
+        if (!currentChatId) return;
+        
+        try {
+            const chats = JSON.parse(localStorage.getItem('glow_chats') || '{}');
+            const firstMessage = chatHistory[0]?.content;
+            
+            let title = "محادثة جديدة";
+            if (firstMessage) {
+                if (Array.isArray(firstMessage)) {
+                    title = firstMessage[0]?.text || title;
+                } else {
+                    title = firstMessage.substring(0, 30);
+                }
+            }
+            
+            // حفظ الملخص فقط (لتفادي تخزين كبير)
+            chats[currentChatId] = {
+                title: title,
+                userId: currentUser?.email || 'guest',
+                messageCount: chatHistory.length,
+                lastUpdate: new Date().toISOString(),
+                hasPDF: pdfPages.length > 0
+            };
+            
+            localStorage.setItem('glow_chats', JSON.stringify(chats));
+            loadHistory();
+            
+        } catch (e) {
+            console.error("خطأ في حفظ المحادثة:", e);
+        }
+    }
+    
+    function loadHistory() {
+        const chats = JSON.parse(localStorage.getItem('glow_chats') || '{}');
+        const list = document.getElementById('history-list');
+        list.innerHTML = "";
+        
+        const chatEntries = Object.entries(chats);
+        
+        if (chatEntries.length === 0) {
+            list.innerHTML = '<div style="text-align:center; color:#666; padding:20px;">لا توجد محادثات سابقة</div>';
+            return;
+        }
+        
+        // عرض المحادثات بترتيب زمني عكسي
+        chatEntries
+            .sort((a, b) => b[1].lastUpdate?.localeCompare(a[1].lastUpdate) || -1)
+            .forEach(([id, chat]) => {
+                const item = document.createElement('div');
+                item.className = "history-item";
+                if (id === currentChatId.toString()) {
+                    item.classList.add('active');
+                }
+                
+                let title = chat.title || "محادثة بدون عنوان";
+                if (chat.hasPDF) {
+                    title = "📄 " + title;
+                }
+                
+                item.innerText = title;
+                item.onclick = () => {
+                    // هنا يمكن تحميل المحادثة الكاملة من تخزين منفصل
+                    // في هذا المثال، نبدأ محادثة جديدة فقط
+                    startNewChat();
+                    toggleSidebar();
+                };
+                
+                list.appendChild(item);
+            });
+    }
+    
+    // اختصارات لوحة المفاتيح
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            askAI();
+        }
+        
+        if (e.key === 'Escape') {
+            stopCurrentTyping();
+            toggleSidebar();
+            closeUserDropdown();
+        }
+    });
+    
+    // --- معلومات المطور ---
+    // هذا التطبيق تم تطويره بواسطة م. أحمد الأسطل
+    // التسجيل على Google Play وتخصيص مساحة التخزين تتم من خلال وحدة تحكم مطوري Google
+    // للمزيد من المعلومات: https://developers.google.com/identity
+    
+    // --- استجابة للشاشات المختلفة ---
+    function checkScreenSize() {
+        // هذه الوظيفة يمكن استخدامها لإجراء تعديلات ديناميكية حسب حجم الشاشة
+        const isMobile = window.innerWidth <= 767;
+        
+        // يمكنك إضافة تعديلات ديناميكية هنا إذا لزم الأمر
+        if (isMobile) {
+            // إضافة تحسينات إضافية للجوال
+        }
+    }
+    
+    // استدعاء عند تغيير حجم النافذة
+    window.addEventListener('resize', checkScreenSize);
+    checkScreenSize(); // استدعاء أولي
+    
+</script>
+</body>
+</html>
